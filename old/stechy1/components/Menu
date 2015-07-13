@@ -1,0 +1,148 @@
+--os.loadAPI("stechy1/core")
+
+local function initSubmenu(self)
+	--core.printTable(self,true)
+	--print(self[1][1])
+	--os.sleep(1)
+
+	return self
+end
+
+local function inicialize(t)
+	for i, v in ipairs(t.items) do
+		print(v[1])
+		--Has submenu
+		v[3] = type(v[2] == "table") and true or false
+		if v[3] then v[2] = initSubmenu(v[2]) end
+		--Visibility
+		v[4] = false
+	end
+
+	return t
+end
+
+new = function(t)
+	assert(t.name, "You need to define name of the control")
+	assert(t.items, "You need to define items of the menu")
+	setmetatable(t, core.prototype)
+	t.draw = menu.draw
+	t.checkXY = menu.checkXY
+	t.pageIndex = 0;
+	t = inicialize(t)
+	return t
+end
+
+local function getTheLongest(table)
+	local length = 0
+	for k, v in pairs(table) do
+		local itemLength = string.len(tostring(v[1]))
+		if itemLength > length then length = itemLength end
+	end
+	return length
+end
+
+draw = function(self)
+	local t = self
+
+	local function printItems(subMenu, x, y)
+		local subMenuIndex = 0
+		local subMenuItems = nil
+		local X = x
+		local Y = y
+		local item = ""
+		local i = 0
+		for k, v in pairs(subMenu) do
+			term.setCursorPos(X, Y)
+			term.write(" "..string.sub(v[1], 1, t.width))
+			term.write(string.rep(" ", t.width - string.len(v[1])))
+			term.write(v[2] and ">" or " ")
+			Y = Y + 1
+			if v[2] then
+				subMenuIndex = i
+				subMenuItems = v[3]
+				item = v[1]
+			end
+			i = i + 1
+		end
+		if subMenuItems == nil then return else
+			printItems(subMenuItems, x + getTheLongest(subMenu) + 2, y + subMenuIndex)
+		end
+	end
+
+	
+	term.setCursorPos(1, 1)
+	term.clearLine()
+	local subMenuIndex = 0
+	local subMenuItems = {}
+	
+	for i, v in ipairs(t.items) do
+		term.write(" "..tostring(v[1]))
+		if v[2] then
+			subMenuIndex = i
+			subMenuItems = v[3]
+		end
+	end
+	local x = 1
+	if subMenuIndex > 1 then
+		for i = 1, subMenuIndex - 1 do
+			x = x + string.len(t.items[i][1])
+		end
+	end
+	printItems(subMenuItems, x + subMenuIndex, 2)
+end
+
+checkXY = function(self, x, y)
+	local function checkSubMenus(subMenu, x, y, xPos, yPos)
+		print("subMenu: "..tostring(subMenu)..", X: "..x
+			..", Y: "..y..", Xpos: "..xPos..", yPos: "..yPos)
+		--paintutils.drawPixel(x, y, colors.green)
+	end
+
+	local t = self
+	local xPos = 2
+	local pomXPos = 0
+	local subMenuIndex = 0
+	local subMenuItems = nil
+	for i, v in ipairs(t.items) do
+		if x >= xPos and x < xPos + string.len(v[1]) and y == 1 then --Horni polozky
+			v[2] = not v[2]
+			print("Echo")			
+			os.sleep(2)
+			--subMenuIndex = i
+			--subMenuItems = v[3]
+			--pomXPos = pomXPos + string.len(v[1])
+			form.draw()
+			return
+		elseif v[2] then --Otevrena polozka hlavniho menu
+			for j = 1, #v[3] do
+				local xPoss = 3
+				--if i > 1 then
+					for k = 1, i - 1 do
+						print("Index: "..k..", xPoss: "..xPoss)
+						xPoss = xPoss + string.len(t.items[i][1]) + j
+					end print()
+				--end
+				print("X: "..x..", xPos: "..xPoss..", result: "..tostring(x >= xPoss))
+				if x >= xPoss and x < xPoss + string.len(v[3][j][1]:sub(1, t.width)) and y == 2 + j - 1 then 
+					print("kliknuto do menu, xPos: "..xPoss + string.len(v[3][j][1]:sub(1, t.width)))
+					--paintutils.drawPixel(x, y, colors.green)
+				end
+				--print("j: "..j..", "..tostring(v[3][j][2]))
+				--[[if v[3][j][2] == true then
+					core.printTable(v[3], true)
+					checkSubMenus(v[3], x, y, pomXPos + subMenuIndex, 2)
+				end]]
+			end
+			--print("checking..."..tostring(v[3][2][2]))
+			--subMenuItems = v[3]
+			--core.printTable(subMenuItems, false)
+			--[[if subMenuItems ~= nil then
+				checkSubMenus(subMenuItems, x, y, pomXPos + subMenuIndex, 2)
+			end]]
+		else
+			v[2] = false
+		end				
+		xPos = xPos + string.len(v[1]) + 1
+	end
+	--gui.form.drawComponents()
+end

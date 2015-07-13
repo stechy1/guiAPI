@@ -1,0 +1,237 @@
+os.loadAPI("gui")
+os.loadAPI("components")
+os.loadAPI("methods")
+
+gui.form.new({})
+
+local width, height = term.getSize()
+
+--Ovladaci tlacitka
+local restart = components.button.new({
+	x = width - 7, 
+	y = height,
+	pageIndex = 0,
+	caption = "Restart",
+	name = "restart",
+	onClick = methods.restart
+})
+
+local home = components.button.new({
+	x = 1,
+	y = height,
+	pageIndex = 0,
+	caption = "Domu",
+	name = "home",
+	onClick = methods.home
+})
+
+local zpet = components.button.new({
+	x = width - 7, 
+	y = 1,
+	pageIndex = 0,
+	caption = "Zpet",
+	name = "Zpet",
+	onClick = methods.back
+})
+
+--Main menu
+local vyber = components.groupBox.new({
+	x = 2,
+	y = 2,
+	pageIndex = 1,
+	items = {
+		{"Ovladani", false, methods.strankaDva},
+		{"Tekutiny", false, methods.strankaTri},
+	},
+	name = "vyber",
+	typ = 3
+})
+
+local ovladani = components.groupBox.new({
+	x = 2,
+	y = 2,
+	pageIndex = 2,
+	items = {
+		{"Quarry", false},
+		{"Druhy", false},
+		{"Treti", false}
+	},
+	name = "vyberOvladani",
+	typ = 2
+})
+
+--Stranka tekutin
+local tekutiny = components.groupBox.new({
+	--methods.getLiquidName(),
+	x = 2, 
+	y = 2,
+	pageIndex = 3,
+	items = methods.getLiquidName()--[[{
+		{"Liquid XP", false, methods.showLiquids},
+		{"Mob essence", false},
+		{"Lava", false},
+		{"Milk", false}
+	}]],
+	name = "liquids",
+	typ = 3
+})
+
+local liquidName = components.label.new({
+	x = 2,
+	y = 2,
+	pageIndex = 4,
+	name = "liquidName",
+	text = "Liquid name"
+})
+
+local amount = components.label.new({
+	x = 2,
+	y = 4,
+	pageIndex = 4,
+	name = "liquidAmount",
+	text = "Amount"
+})
+
+local capacity = components.label.new({
+	x = 2,
+	y = 6,
+	pageIndex = 4,
+	name = "liquidCapacity",
+	text = "Capacity"
+})
+
+local mount = components.button.new({
+	x = 2,
+	y = 10,
+	pageIndex = 4,
+	name = "mount",
+	caption = "Vybrat",
+	onClick = methods.mount
+})
+
+local unmount = components.button.new({
+	x = 15,
+	y = 10,
+	pageIndex = 4,
+	name = "unmount",
+	caption = "Splachnout",
+	onClick = methods.unmount
+})
+
+local pBar = components.progressBar.new({
+	name = "pBar",
+	x = 15,
+	y = 5,
+	width = 20,
+	percent = 150
+})
+
+local comb = components.comboBox.new({
+	x = 10,
+	y = 10,
+	name = "ComboBox",
+	pageIndex = 1,
+	autosize = false,
+	items = {
+		"Jaro",
+		"Leto",
+		"Podzim",
+		"Zima",
+		"Slunovrat",
+		"Dalsi",
+		"Jestedalsi"
+	}
+
+})
+
+gui.form.add(restart)
+gui.form.add(vyber)
+gui.form.add(zpet)
+gui.form.add(home)
+gui.form.add(ovladani)
+gui.form.add(tekutiny)
+gui.form.add(liquidName)
+gui.form.add(capacity)
+gui.form.add(amount)
+gui.form.add(mount)
+gui.form.add(unmount)
+gui.form.add(pBar)
+gui.form.add(comb)
+
+--[[
+local restart = components.button.new({
+	x = width - 7, 
+	y = height,
+	pageIndex = 0,
+	caption = "Restart",
+	name = "restart",
+	onClick = methods.restart
+})
+
+local menu = components.menu.new({
+	name = "mainMenu",
+	items = {
+		{
+			"File",
+			false,
+			{
+				{
+					"Open",
+					false,
+					{
+						{"Auto", nil},
+						{"Kolo", nil},
+						{"Motorka", nil}
+					}
+				}, 
+				{
+					"Save", 
+					false,
+					{
+						{"Jaro", nil},
+						{"Leto", nil},
+						{"Podzim", nil},
+						{"Zima", nil}
+					}
+				}, 
+				{
+					"Save as", nil
+				}
+			}
+		},
+		{
+			"Option",
+			false,
+			{
+				{"Control", nil},
+				{
+					"Settings", 
+					false,
+					{
+						{"Acer", nil},
+						{"HP", nil}
+					}
+				}
+			}
+		},
+		{
+			"Help",
+			false,
+			{
+				{"Leden", nil}, 
+				{"Unor", nil},
+				{"Brezen", nil}
+			}
+		}
+	}
+})]]
+
+
+--gui.form.add(menu)
+--
+
+--gui.form.add(liquidName)
+
+--gui.form.drawComponents()
+
+--gui.form.checkActivity()

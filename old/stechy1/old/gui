@@ -1,0 +1,86 @@
+frm = {}
+
+local prototype = {
+	__index = {
+		background = colors.black;
+		size = {term.getSize()};
+		page = 1;
+		element = {};
+	}
+}
+
+form = {
+	new = function(t)
+		setmetatable(t, prototype)
+		frm = t
+		term.setBackgroundColor(t.background)
+		term.clear()
+	end;
+
+	add = function(t)
+		assert(t, "You need to define which element you want to add")
+		frm.element[t.name] = t
+	end;
+
+	drawComponents = function()
+		term.setBackgroundColor(frm.background)
+		term.clear()
+		for k, v in pairs(frm.element) do
+			if v.pageIndex == frm.page or v.pageIndex == 0 then
+				v:draw()
+			end
+		end
+	end;
+
+	checkActivity = function()
+		while true do
+			event, button, x, y = os.pullEvent()
+			if event == "mouse_click" then
+				for k, v in pairs(frm.element) do
+					if v.pageIndex == frm.page or v.pageIndex == 0 then
+						v:checkXY(x,y)
+					end
+				end
+			elseif event == "key" then
+				for k,v in pairs(frm.element) do
+					if v.pageIndex == frm.page or v.pageIndex == 0 then
+						if v.keyDown ~= nil then
+							v.keyDown()
+						end
+					end
+				end
+			end
+		end
+	end;
+
+	getElement = function(element)
+		return frm.element[element]
+	end;
+
+	getSize = function()
+		return frm.size[1]
+	end;
+
+	getPage = function()
+		return frm.page
+	end;
+
+	setPage = function(newPage)
+		frm.page = newPage
+		form.drawComponents()
+	end;
+
+	setLabelText = function(element, value)
+		frm.element[element].text = value
+		--frm.element["liquidName"].text = "Liquid XP"
+	end;
+
+	setProgress = function(element, value)
+		if frm.element[element].percent ~= nil then
+			frm.element[element].percent = value
+			frm.element[element].draw()
+		else
+			print("The chosen element is not a progress bar")
+		end
+	end;
+}

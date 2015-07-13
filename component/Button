@@ -1,0 +1,25 @@
+local buttonID = 1
+
+function new (o)
+	
+	t = Labeled.new(o)
+
+	t.draw = draw
+
+	t.background = t.background or Style.theme[t.theme].button.background
+	t.textColor = t.textColor or Style.theme[t.theme].button.textColor
+	t.textBackground = t.textBackground or Style.theme[t.theme].button.textBackground
+
+	if t.id == nil then
+		t.id = "Button_"..buttonID
+		buttonID = buttonID + 1
+	end
+
+	if t.autosize then t.width = #t.text end
+
+	return t
+end
+
+function draw (self)
+	Label.draw(self)
+end

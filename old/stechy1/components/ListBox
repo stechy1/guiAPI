@@ -1,0 +1,92 @@
+new = function(t)
+	assert(t.name, "You need to define name of the control")
+	assert(t.x, "You need to define X coordinate")
+	assert(t.y, "You need to define Y coordinate")
+	assert(t.items, "You need to define items of listbox")
+	setmetatable(t, core.prototype)
+	t.draw = draw
+	t.checkXY = checkXY
+	t.mouseScroll = mouseScroll
+	t.selected = -1;
+	t.index = 0;
+
+	if t.height < 2 then t.height = 2 end
+	if t.height > #t.items then t.height = #t.items end
+
+	return t
+end
+
+draw = function(self)
+	local t = self
+	term.setTextColor(t.txtColor)
+	term.setBackgroundColor(t.txtBgColor)
+	term.setCursorPos(t.x, t.y)
+
+	if t.index < 0 then t.index = 0 end
+	if t.index > #t.items - t.height then t.index = #t.items - t.height end
+
+	local k = 1 
+	for i = t.index + 1, t.index + t.height do
+		if k == t.height + 1 or t.items[i] == nil then break end
+		local text = t.items[i]
+		term.setCursorPos(t.x, t.y + k - 1)
+
+		if t.selected == i then	term.setBackgroundColor(colors.green) end
+
+		if t.width > #text then--sirka vetsi nez text
+			term.write(" "..text)
+			term.write(string.rep(" ", t.width - #text - 1))
+		else --sirka mensi nez text
+			term.write(string.sub(" " .. text, 1, t.width))
+		end
+		term.write(" ")
+		k = k + 1
+
+		if t.selected == i then	term.setBackgroundColor(t.txtBgColor) end
+	end
+	if #t.items > t.height then
+		local endY = #t.items > t.height and t.height - 1 or #t.items - 1
+		paintutils.drawLine(t.x + t.width + 1, t.y, t.x + t.width + 1, t.y + endY, t.mainBgColor)
+		paintutils.drawLine(t.x + t.width + 2, t.y, t.x + t.width + 2, t.y + endY, t.mainBgColor)		
+		term.setTextColor(t.txtColor)
+		term.setBackgroundColor(t.txtBgColor)
+		term.setCursorPos(t.x + t.width + 2, t.y)
+		term.write("^")
+		term.setCursorPos(t.x + t.width + 2, t.y + t.height - 1)
+		term.write("v")
+	end
+end
+
+checkXY = function(self, x, y)
+	local t = self
+	for i = 1, t.height do
+		if x >= t.x and x <= t.x + t.width and y == t.y + i - 1 then --vyberu item
+			t.selected = i + t.index
+			if t.onChange ~= nil then
+				t.onChange(self)
+			end
+			t:draw()
+			break
+		end
+	end
+	if x == t.x + t.width + 2 and y == t.y then --sipka nahoru
+		if t.index > 0 then
+			t.index = t.index - 1
+		end
+		t:draw()
+	elseif x == t.x + t.width + 2 and y == t.y + t.height - 1 then --sipka dolu
+		if t.index < #t.items - t.height then
+			t.index = t.index + 1
+		end
+		t:draw()
+	end
+end
+
+mouseScroll = function(self, x, y, direction)
+	local t = self
+
+	if x >= t.x and x <= t.x + t.width + 2 and y >= t.y and y <= t.y + t.height - 1 then
+		t.index = t.index + direction
+		t:draw()
+	end
+end

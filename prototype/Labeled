@@ -1,0 +1,31 @@
+function new (o)
+	t = Region.new(o)
+
+	t.text = t.text or "Control"
+	t.renderText = t.renderText or renderText
+	t.prepareRenderText = t.prepareRenderText or prepareRenderText
+
+	return t
+end
+
+function renderText(self, prepare)
+	--self.prepareRenderText(self.layoutX, self.layoutY, self.textColor, self.textBackground)
+	if prepare == nil or prepare then self:prepareRenderText() end
+
+	if self.autosize then
+		term.write(self.text)
+	else
+		term.write(Util.shorterString(self.text, self.width))
+		--if #self.text > self.width then
+		--	term.write(string.sub(self.text, 1, self.width))
+		--else
+		--	term.write(self.text)
+		--end
+	end
+end
+
+function prepareRenderText(self, x, y, tC, bC)
+	term.setCursorPos(x or self.layoutX, y or self.layoutY)
+	term.setBackgroundColor(bC or self.textBackground)
+	term.setTextColor(tC or self.textColor)
+end

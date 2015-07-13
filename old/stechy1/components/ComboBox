@@ -1,0 +1,125 @@
+local comboBoxes = 1
+
+new = function(t)
+	assert(t.name, "You need to define name of the control")
+	assert(t.x, "You need to define X coordinate")
+	assert(t.y, "You need to define Y coordinate")
+	assert(t.items, "You need to define items of the combobox")
+	setmetatable(t, core.prototype)
+	t.draw = draw
+	t.checkXY = checkXY
+	t.mouseScroll = mouseScroll
+	if t.caption == nil then
+		t.caption = "ComboBox"..comboBoxes
+		comboBoxes = comboBoxes + 1
+	end
+	t.height = 5
+	t.enabled = false;
+	t.visItemCount = 5
+	t.selected = -1;
+	t.index = 0;
+
+	if t.height < 2 then t.height = 2 end
+	if t.height > #t.items then t.height = #t.items end
+
+	return t
+end
+
+draw = function(self)
+	local t = self
+
+	if t.index < 0 then t.index = 0 end
+	if t.index > #t.items - t.height then t.index = #t.items - t.height end
+
+	if t.selected ~= -1 then t.caption = t.items[t.selected] end
+	--caption vetsi nez sirka
+	if #t.caption > t.width and t.autosize then  t.width = #t.caption end
+
+	paintutils.drawLine(t.x,t.y,t.x + t.width, t.y, t.mainBgColor) --cara na caption
+	term.setCursorPos(t.x, t.y)
+	term.setTextColor(t.txtColor)
+	term.write(string.sub(t.caption, 1, t.width))
+	term.setCursorPos(t.x + t.width, t.y)
+	if t.enabled then --combobox je rozkliknuty
+		term.write(" /\\")
+		for i = 1, t.visItemCount do
+			paintutils.drawLine(t.x, t.y + i, t.x + t.width, t.y + i, t.txtBgColor)
+		end
+		term.setTextColor(t.txtColor)
+		term.setBackgroundColor(t.txtBgColor)
+		local k = 1
+		for i = t.index + 1, t.index + t.visItemCount do
+			if k == t.height + 1 then break end
+			local text = t.items[i]
+			
+			term.setCursorPos(t.x, t.y + k)
+			if t.width > #text then --sirka vetsi nez text
+				term.write(" "..text)
+				term.write(string.rep(" ",t.width - #text))
+			else --sirka mensi nez text
+				term.write(string.sub(" "..text,1,t.width))
+			end
+			term.write(" ")
+			k = k + 1
+		end
+
+		paintutils.drawLine(t.x + t.width + 1, t.y + 1, t.x + t.width + 1, t.y + t.visItemCount, t.mainBgColor)
+		paintutils.drawLine(t.x + t.width + 2 , t.y + 1, t.x + t.width + 2, t.y + t.visItemCount, t.mainBgColor)
+		if #t.items > t.visItemCount then
+			term.setCursorPos(t.x + t.width + 2, t.y + 1)
+			term.write("^")
+			term.setCursorPos(t.x + t.width + 2, t.y + t.visItemCount)
+			term.write("v")
+		end
+	else --combobox je zavreny
+		term.write(" \\/")
+	end
+end
+
+checkXY = function(self, x, y)
+	local t = self
+	if t.enabled then --combobox je rozkliknuty
+		if x >= t.x and x <= t.x + t.width + 3 and y == t.y then --kliknu do labelu
+			t.selected = -1
+			t.enabled = false
+			form.draw()
+			return false
+		elseif x == t.x + t.width + 2 and y == t.y + 1 then --sipka nahoru
+			if t.index > 0 then
+				t.index = t.index - 1
+			end
+			t:draw()
+		elseif x == t.x + t.width + 2 and y == t.y + t.visItemCount then --sipka dolu
+			if t.index < #t.items - t.visItemCount then
+				t.index = t.index + 1
+			end
+			t:draw()
+		end
+		for i = 1, t.visItemCount do
+			if x >= t.x and x <= t.x + t.width and y == t.y + i then --vyberu item
+				t.selected = i + t.index
+				t.enabled = false
+				if t.onChange ~= nil then
+					t.onChange(self)
+				end
+				form.draw()
+				break
+			end
+		end
+	else
+		if x >= t.x and x <= t.x + t.width + 2 and y == t.y then --kliknu nahoru a je zavreny
+			t.enabled = true
+			t.index = 0
+			t:draw()
+		end
+	end
+end
+
+mouseScroll = function(self, x, y, direction)
+	local t = self
+
+	if x >= t.x and x <= t.x + t.width + 2 and y >= t.y and y <= t.y + t.height and t.enabled then
+		t.index = t.index + direction
+		t:draw()
+	end
+end

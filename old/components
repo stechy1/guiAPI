@@ -1,0 +1,287 @@
+local prototype = {
+	__index = {
+		x = 1,
+		y = 1,
+		width = 10,
+		height = 1,
+		margin = 1,
+		padding = 1,
+		text = nil,
+		autosize = true,
+		foreColor = colors.white,
+		backColor = nil,
+		onClick = nil,
+		onChange = nil,
+		onKeyPress = nil,
+		visible = true
+	}
+}
+
+local componentsId = {
+	labels = 1,
+	buttons = 1,
+	groupBoxes = 1,
+	textboxes = 1
+}
+
+--
+-- LABEL
+--   NEW : Define new label, PARAMS: name - name of label (can nill), RETURN: t
+--   DRAW : Draw defined label
+--   SET : Change property and redraw label
+--
+label = {
+	new = function(name)
+		t = {}
+		t.draw = label.draw
+		t.set = label.set
+		setmetatable(t, prototype)
+		if not name then 
+			t.name = "label"..componentsId.labels
+		end
+		componentsId.labels = componentsId.labels + 1
+		return t
+	end,
+	draw = function(self)
+		t = self
+		term.setCursorPos(t.x, t.y)
+		term.setBackgroundColor(t.backColor)
+		term.setTextColor(t.foreColor)
+		if not t.autosize then
+			print(string.sub(t.text, 1, t.width))
+		else
+			print(t.text)
+		end
+	end,
+	set = function(self, prop, value)
+		t = self
+		t[prop] = value
+		t:draw()
+	end
+}
+
+
+--
+-- BUTTON
+--   NEW : Define new button, PARAMS: name - name of button (can nill), RETURN: t
+--   DRAW : Draw defined button
+--   CLICK : Called adter click on button
+--   SET : Change property and redraw button
+-- 
+--
+button = {
+	new  = function(name)
+		t = {}
+		t.draw = button.draw
+		t.set = button.set
+		t.click = button.click
+		setmetatable(t, prototype)
+		if not name then 
+			t.name = "button"..componentsId.buttons
+		end
+		componentsId.buttons = componentsId.buttons + 1
+		return t
+	end,
+	draw = function(self)
+		t = self
+		local xEndPosForDrawLine = t.x + t.width-1
+		for y=t.y,t.y + t.height - 1 do
+			paintutils.drawLine(t.x, y, xEndPosForDrawLine, y, t.backColor)
+		end
+		term.setBackgroundColor(t.backColor)
+		term.setTextColor(t.foreColor)
+		if t.autosize then
+			term.setCursorPos(t.x + math.floor((t.width)/2) - math.floor(#t.text/2), t.y + math.ceil(t.height / 2) - 1)
+		else
+			term.setCursorPos(t.x + math.floor((t.width - #string.sub(t.text, 1, t.width))/2), t.y + math.ceil(t.height / 2) - 1)
+		end
+    --								3									9      - 2          -    7
+		if t.width > #t.text + 2*t.padding then
+			term.write(t.text)
+		else
+			term.write(string.sub(t.text, 1, t.width))
+		end
+	end,
+	click = function(self)
+		self.onClick()
+	end,
+	set = function(self, prop, value)
+		t = self
+		t[prop] = value
+		t:draw()
+	end
+}
+
+
+--
+-- GROUPBOX
+--   NEW : Define new groupbox, PARAMS: name - name of groupbox (can nill), RETURN: t
+--   DRAW : Draw defined groupbox
+--   CLICK : Called after click on groupbox
+--   SET : Change property and redraw groupbox
+--
+groupBox = {
+	new = function(name)
+		t = {}
+		t.draw = groupBox.draw
+		t.set = groupBox.set
+		setmetatable(t, prototype)
+		if not name then 
+			t.name = "groupBox"..componentsId.groupBoxes
+		end
+		componentsId.groupBoxes = componentsId.groupBoxes + 1
+		
+		return t
+	end,
+	draw = function(self)
+		t = self
+		for i, item in ipairs(t.items) do
+			if item[2] then
+				paintutils.drawLine(t.x, t.y + (i-1), t.x + 1, t.y + (i-1), colors.green)
+			else
+				paintutils.drawLine(t.x, t.y + (i-1), t.x + 1, t.y + (i-1), colors.red)
+			end
+			term.setBackgroundColor(t.backColor)
+			term.setTextColor(t.foreColor)
+			term.setCursorPos(t.x  + 3, t.y + (i-1))
+			print(item[1])
+		end
+	end,
+	click = function(self, x, y)
+		t = self
+		for i, item in pairs(t.items) do
+			if x >= t.x and x <= t.x + 1 and y == t.y + (i-1) then
+				if t.type == 1 then
+					for i, switchItem in ipairs(t.items) do
+						switchItem[2] = false
+					end
+					item[2] = true
+				elseif t.type == 2 then
+					item[2] = not item[2]
+				else
+					return false
+				end
+				if t.onChange ~= nil then
+					t.onChange()
+				end
+			end
+		end
+	end,
+	set = function(self, prop, value)
+		t = self
+		t[prop] = value
+		t:draw()
+	end
+}
+
+
+--
+-- TEXTBOX
+--   NEW : Define new textbox, PARAMS: name - name of textbox (can nill), RETURN: t
+--   DRAW : Draw defined textbox
+--
+textbox = {
+	new = function(name)
+		t = {}
+		t.cursorX = 1
+		t.cursorY = 1
+		t.focused = false
+		t.multiline = false
+		t.draw = textbox.draw
+		t.drawText = textbox.drawText
+		t.focus = textbox.focus
+		t.defocus = textbox.defocus
+		t.keyPress = textbox.keyPress
+		t.putChar = textbox.putChar
+		t.click = textbox.click
+		setmetatable(t, prototype)
+		if not name then
+			t.name = "textbox"..componentsId.textboxes
+		end
+		componentsId.textboxes = componentsId.textboxes + 1
+		return t		
+	end,
+	draw = function(self)
+		t = self
+		if t.multiline then
+			if not t.text or type(t.text) ~= "table" then
+				t.text = {""}
+			end
+		else
+			if not t.text then
+				t.text = ""
+			end
+			t.height = 1
+		end
+		for y=t.y, t.y+t.height-1 do
+			paintutils.drawLine(t.x, y, t.x+t.width-1, y, t.backColor)
+		end
+		t:drawText()
+	end,
+	drawText = function(self)
+		t = self
+		term.setCursorPos(t.x, t.y)
+		term.setBackgroundColor(t.backColor)
+		term.setTextColor(t.foreColor)
+		if t.focused then
+			if not t.multiline then
+				if #t.text >= t.width then
+					term.setCursorPos(t.x+t.width-1, t.y)
+					term.write(" ")
+					term.setCursorPos(t.x, t.y)
+				end
+				term.write(string.sub(t.text, -t.width+1))
+			end
+		else
+			if not t.multiline then
+				term.write(string.sub(t.text, 1, t.width))
+			end
+		end
+	end,
+	focus = function(self)
+		t = self
+		f = form.getCurrentForm()
+		if not t.multiline then
+			t.cursorX = #t.text + 1
+			term.setCursorBlink(true)
+			t.focused = true
+			f.focusedComponent = t
+		end
+		t:drawText()
+	end,
+	defocus = function(self)
+		t = self
+		f = form.getCurrentForm()
+		t.focused = false
+		f.focusedComponent = nil
+		term.setCursorBlink(false)
+		t:drawText()
+	end,
+	keyPress = function(self, key)
+		t = self
+		if t.focused then
+			if key == keys.backspace then
+				if t.cursorX > 0 then
+					t.cursorX = t.cursorX - 1
+					t.text = string.sub(t.text, 1, t.cursorX)
+					term.setCursorPos(t.x, t.y)
+					term.write(string.rep(" ", t.width))
+					t:drawText()
+				end
+			end
+		end
+	end,
+	putChar = function(self, char)
+		t = self
+		if t.focused then
+			t.text = string.sub(t.text, 1, t.cursorX-1)..char..string.sub(t.text, t.cursorX, #t.text)
+			t.cursorX = t.cursorX + 1
+			t:drawText()
+		end
+	end,
+	click = function(self)
+		if not self.focused then
+			self:focus()
+		end
+	end
+}

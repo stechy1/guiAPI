@@ -1,0 +1,41 @@
+local labelID = 1
+
+function new (o)
+
+	t = Labeled.new(o)
+
+	t.draw = draw
+
+	t.background = t.background or Style.theme[t.theme].label.background
+	t.textColor = t.textColor or Style.theme[t.theme].label.textColor
+	t.textBackground = t.textBackground or Style.theme[t.theme].label.textBackground
+
+	if t.id == nil then
+		t.id = "Label_"..labelID
+		labelID = labelID + 1
+	end
+
+	if t.autosize then t.width = #t.text end
+	
+	return t
+end
+
+function draw (self)
+	--if self == nil then return false end
+	Region.draw(self)
+	--Labeled.renderText(self)
+	self:renderText()
+	-- term.setCursorPos(self.layoutX, self.layoutY)
+	-- term.setBackgroundColor(self.background)
+	-- term.setTextColor(self.textColor)
+
+	-- if self.autosize then
+	-- 	term.write(self.text)
+	-- else
+	-- 	if #self.text > self.width then
+	-- 		term.write(string.sub(self.text, 1, self.width))
+	-- 	else
+	-- 		term.write(self.text)
+	-- 	end
+	-- end
+end

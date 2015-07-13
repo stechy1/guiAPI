@@ -1,0 +1,11 @@
+function new (t)
+	t = t or {}
+
+	t.id = t.id or Util.randomString(5)
+
+	setmetatable(t, {
+		__tostring = function() return t.id end
+	})
+
+	return t
+end

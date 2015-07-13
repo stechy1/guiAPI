@@ -1,0 +1,68 @@
+RADIOBUTTON = 1
+CHECKBOX = 2
+BUTTON = 3
+
+local groupBoxes = 1
+
+new = function (t)
+	assert(t.name, "You need to define name of the control")
+	assert(t.x, "You need to define X coordinate")
+	assert(t.y, "You need to define Y coordinate")
+	assert(t.items, "You need to define items of the groupBox")
+	assert(t.typ, "You need to define type of the groupBox (1 = radiobutton / 2 = checkbox / 3 = button")
+	setmetatable(t, core.prototype)
+	t.draw = draw
+	t.checkXY = checkXY
+	if t.caption == nil then
+		t.caption = "CheckBoxGroup"..groupBoxes
+		groupBoxes = groupBoxes + 1
+	end
+	t.width = 2;
+	t.height = 2;
+	t.groupBox = "GroupBox"..groupBoxes;
+	t.autosize = false;
+	t.selected = -1
+	return t
+end
+
+draw = function(self)
+	local t = self
+	for i, item in ipairs(t.items) do
+		if item[2] then
+			paintutils.drawLine(t.x, t.y + (i-1) * t.margin, t.x + 1, t.y + (i-1) * t.margin, t.btnClrOn)
+		else
+			paintutils.drawLine(t.x, t.y + (i-1) * t.margin, t.x + 1, t.y + (i-1) * t.margin, t.btnClrOff)
+		end
+		term.setBackgroundColor(t.txtBgColor)
+		term.setTextColor(t.txtColor)
+		term.setCursorPos(t.x + t.margin + 1, t.y + (i-1) * t.margin)
+		print(item[1])
+	end
+end
+
+checkXY = function(self, x,y)
+	local t = self
+	for i, item in pairs(t.items) do
+		if x >= t.x and x <= t.x + 1 and y == t.y + (i-1) * t.margin then
+			t.selected = i
+			if t.typ == RADIOBUTTON then -- radiobutton
+				for i, switchItem in ipairs(t.items) do
+					switchItem[2] = false
+				end
+				item[2] = true
+			elseif t.typ == CHECKBOX then -- checkbox
+				item[2] = not item[2]
+			elseif t.typ == BUTTON then -- button
+				if item[3] ~= nil then
+					item[3]()
+				end
+			else
+				return false
+			end
+			if t.onChange ~= nil then
+				t.onChange(t.items)
+			end
+			form.draw()
+		end
+	end
+end

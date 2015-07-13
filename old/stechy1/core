@@ -1,0 +1,129 @@
+local path = "stechy1"
+local components = {"Label", "Button", "TextBox", "ProgressBar", "GroupBox", "ComboBox", "ListBox", "Menu", "Dialog"}
+local apis = {"form", "methods", "designer"}
+local mistake = 0
+local debug = false
+
+prototype = {
+	__index = {
+		x = 1;							--X coordinate
+		y = 1;							--Y coordinate
+		text = "";
+		caption = nil;					--Label for component
+		width = 7;						--Width
+		height = 1;						--Height
+		padding = 0;					--Padding for text in component (for button and caption)
+		margin = 2;						--Margin for component (only for groupBox)
+		txtColor = colors.white;		--Text color
+		txtBgColor = colors.blue;		--Text bacground color
+		mainBgColor = colors.blue;		--Main bacground color
+		btnClrOn = colors.green;		--Color for ON button
+		btnClrOff = colors.red;			--Color for OFF button
+		pageIndex = 1;					--Page index - for multiform
+		showCaption = false;			--If true, then caption will be rendered
+		autosize = true;				--If true, control will auto set width
+		onClick = nil;					--Function onClick
+		onChange = nil;					--Function onChange (for textBox and ListBox or Combobox or Groupbox)
+		keyDown = nil;
+		visible = true;
+		mouseScroll = nil;
+		draw = function()				--Base drawing function
+			print("Drawing not implementet yet!")
+		end;
+		checkXY = function(x,y)			--Base checking function (onMouseClick)
+			print("Checking failed")
+		end;
+
+	}
+}
+
+function init()
+	--Loading components
+	for i, v in ipairs(components) do
+		if debug then
+			print("Loading: "..path.."/components/"..v)
+			os.sleep(0.2)
+		end
+		if not os.loadAPI(path.."/components/"..v) then
+			mistake = mistake + 1
+		end
+	end
+
+	--Loading form, methods, designer
+	for i, v in ipairs(apis) do
+		if debug then
+			print("Loading: "..path.."/"..v)
+			os.sleep(0.2)
+		end
+		if not os.loadAPI(path.."/"..v) then
+			mistake = mistake + 1
+		end
+	end
+
+	if mistake == 0 then
+		print("Success")
+		form.draw()
+		form.run()
+	else
+		print("Somewhere is a problem")
+		print(mistake)
+	end
+end
+
+function printString(table)
+	local toPrint = ""
+	if type(table) == "table" then
+		for k, v in pairs(table) do
+			toPrint = toPrint.."Key: "..k.." Value = "..tostring(v)..", "
+		end
+	else
+		toPrint = table
+	end
+	print(toPrint)
+end
+
+function printTable(table, recursive, padding)
+	if padding == nil then padding = 0 end
+	if table == nil then print("Table doesnt exist") return false end
+	if type(table) ~= "table" then print("This is not a table") return false end
+	for k, v in pairs(table) do
+		if recursive and type(v) == "table" then
+			print(string.rep(" ", padding) .. "Key: ".. k .. ", value: " .. tostring(v))
+			printTable(v, true, padding + 1)
+		else
+			print(string.rep(" ", padding) .. "Key: "..k..", value: "..tostring(v))
+		end
+	end
+end
+
+function save(table, recursive, file)
+	for k, v in pairs(table) do
+		if recursive and type(v) == "table" then
+			save(table, true, file)
+		else
+			--file.write(textutils.serialize(tostring(v)))
+			print(tostring(v))
+		end
+	end
+end
+
+local function writer(var, recursive, file)
+	if type(var) == "table" then
+		for k, v in pairs(var) do
+			if type(v) == "table" and recursive then
+				writer(v, recursive, file)
+			else
+				file.write("Key: " .. k .. ", Value: " .. tostring(v) .. "\n")
+			end
+		end
+	else
+		file.write(tostring(var) .. "\n")
+	end
+end
+
+function dump(var, recursive, path)
+	local file = fs.open(path, "w")
+	writer(var, recursive, file)
+	--file:flush()
+	file.close()
+end

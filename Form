@@ -1,0 +1,124 @@
+local frm = {}
+
+local prototype = {
+	__index = {
+		background = colors.black;
+		page = 1;
+		element = {};
+	}
+}
+
+components = {
+	add = function(component)
+		if component == nil then
+			print("Component is null")
+			error()
+		end
+		local i = component.pageIndex
+		if not frm.element[i] then frm.element[i] = {} end
+		frm.element[i][component.id] = component
+	end,
+	delete = function(component)
+		if frm.element[component.id] ~= nil then
+			table.remove(frm.element, component.id)
+		end
+	end,
+	get = function(id, page)		
+		if frm.element[page][id] ~= nil then
+			return frm.element[page][id]
+		end
+		return false
+	end,
+	set = function(id, page, property, value)
+
+		frm.element[page][id][property] = value
+	end
+}
+
+function setPage(newPage)
+	if newPage > 0 then 
+		frm.page = newPage
+		Form.draw()
+	end
+end
+
+function getPage()
+
+	return frm.page
+end
+
+function getWidth()
+
+	return frm.width
+end
+
+function getHeight()
+
+	return frm.height
+end
+
+function draw()
+	term.setBackgroundColor(frm.background)
+	term.clear()
+	if frm.page ~= 0 and frm.element[frm.page] then
+		for k, v in pairs(frm.element[frm.page]) do
+			v:draw()
+		end
+	end
+	if frm.element[0] ~= nil then
+		for k, v in pairs(frm.element[0]) do
+			v:draw()
+		end
+	end
+end
+
+function run()
+	while true do
+
+		local e = {os.pullEvent()}
+		local eventType = e[1];
+		local x = e[3]
+		local y = e[4]
+		local c = true
+
+		--Projede všechna kliknutí na popředí
+		for _, v in pairs(frm.element[0]) do
+			if eventType == "mouse_click" then
+				if v.visible and v:contains(x, y) then
+					c = false
+					v:mouseClickInternal(x, y)
+					--v:onMouseClick(x, y)
+					break
+				end
+			end
+		end
+		if frm.element[frm.page] and c then
+			for _, v in pairs(frm.element[frm.page]) do
+				if eventType == "mouse_click" then
+					if v.visible and v:contains(x, y) then
+						v:mouseClickInternal(x, y)
+						--v:onMouseClick(x, y)
+						--reak
+					end
+				elseif eventType == "mouse_scroll" then
+					if v.visible and v:contains(x, y) then
+						v:mouseScrollInternal(x, y, e[2])
+						--v:onMouseScroll(x, y, e[2])
+						break
+					end
+				end
+			end
+		end
+	end
+end
+
+function new(t)
+	t = t or {}
+	setmetatable(t, prototype)
+	t.width, t.height = term.getSize()
+	t.element[0] = {}
+	t.element[1] = {}
+	frm = t
+end
+
+new()

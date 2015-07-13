@@ -1,0 +1,188 @@
+form.new({})
+
+local restart = Button.new({
+	x = form.width - 6, 
+	y = form.height,
+	pageIndex = 0,
+	caption = "Restart",
+	name = "restart",
+	onClick = methods.restart
+})
+
+local checkbox = GroupBox.new({
+	x = 2,
+	y = 2,
+	pageIndex = 1,
+	items = {
+		{"Zombie", false},
+		{"Enderman", false},
+		{"Blaze", false}
+	},
+	name = "checkbox",
+	typ = GroupBox.CHECKBOX
+})
+
+local listbox = ListBox.new({
+	x = 15,
+	y = 4,
+	height = 5,
+	pageIndex = 1,
+	width = 11,
+	items = {
+		"ListItem1",
+		"ListItem2",
+		"ListItem3",
+		"ListItem4",
+		"ListItem5",
+		"ListItem6",
+		"ListItem7",
+		"ListItem8",
+		"ListItem9",
+		"ListItem10"
+	},
+	name = "listBox"
+})
+
+local combobox = ComboBox.new({
+	x = 20,
+	y = 12,
+	width = 12,
+	pageIndex = 1,
+	items = {
+		"ComboItem1",
+		"ComboItem2",
+		"ComboItem3",
+		"ComboItem4",
+		"ComboItem5",
+		"ComboItem6",
+		"ComboItem7",
+		"ComboItem8",
+		"ComboItem9",
+		"ComboItem10"
+	},
+	name = "combobox"
+})
+
+local lbl = Label.new({
+	x = 23,
+	y = 2,
+	text = "Labelek",
+	name = "label"
+})
+
+local tbox = TextBox.new({
+	x = 31,
+	y = 2,
+	name = "textbox"
+})
+
+local progressbar = ProgressBar.new({
+	x = 20,
+	y = 10,
+	progress = 0,
+	name = "progressbar"
+})
+
+local radiogroup = GroupBox.new({
+	x = 2,
+	y = 10,
+	pageIndex = 1,
+	items = {
+		{"ZombieRadio", false},
+		{"EndermanRadio", false},
+		{"BlazeRadio", false}
+	},
+	name = "radiogroup",
+	typ = GroupBox.RADIOBUTTON
+})
+
+local addBtn = Button.new({
+	x = 30,
+	y = 5,
+	caption = "add",
+	name = "addBtn",
+	onClick = methods.add
+})
+
+local minusBtn = Button.new({
+	x = 30,
+	y = 7,
+	caption = "minus",
+	name = "minusBtn",
+	onClick = methods.minus
+})
+
+local dlg = Dialog.new({
+	name = "infoDialog",
+	dialogType = Dialog.DANGER,
+	text = "Toto je nejaky text"
+})
+
+--[[local menu = Menu.new({
+	name = "mainMenu",
+	items = {
+		{
+			"File",
+			{
+				{
+					"Open",
+					{
+						{"Auto", nil},
+						{"Kolo", nil},
+						{"Motorka", nil}
+					}
+				}, 
+				{
+					"Save",
+					{
+						{"Jaro", nil},
+						{"Leto", nil},
+						{"Podzim", nil},
+						{"Zima", nil}
+					}
+				}, 
+				{
+					"Save as", nil
+				}
+			}
+		},
+		{
+			"Option",
+			{
+				{"Control", nil},
+				{
+					"Settings", 
+					{
+						{"Acer", nil},
+						{"HP", nil}
+					}
+				}
+			}
+		},
+		{
+			"Help",
+			{
+				{"Leden", nil}, 
+				{"Unor", nil},
+				{"Brezen", nil}
+			}
+		},
+		{
+			"About", nil
+		}
+	}
+})]]
+
+
+
+form.components.add(checkbox)
+form.components.add(listbox)
+form.components.add(combobox)
+form.components.add(lbl)
+form.components.add(tbox)
+form.components.add(progressbar)
+form.components.add(radiogroup)
+form.components.add(addBtn)
+form.components.add(minusBtn)
+form.components.add(dlg)
+form.components.add(restart)

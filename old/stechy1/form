@@ -1,0 +1,108 @@
+local formular = {}
+
+local prototype = {
+	__index = {
+		background = colors.black;
+		page = 1;
+		element = {};
+	}
+}
+
+width, height = term.getSize()
+
+components = {
+	add = function(component)
+		if component == nil then
+			print("Component is null")
+			error()
+		end
+		local i = component.pageIndex
+		if not formular.element[i] then	formular.element[i] = {} end
+		formular.element[i][component.name] = component
+	end,
+	delete = function(component)
+		if formular.element[component.name] ~= nil then
+			table.remove(formular.element, component.name)
+		end
+	end,
+	get = function(name, page)		
+		if formular.element[page][name] ~= nil then
+			return formular.element[page][name]
+		end
+		return false
+	end,
+	set = function(name, page, property, value)
+
+		formular.element[page][name][property] = value
+	end
+}
+ 
+function setPage(newPage)
+	formular.page = newPage
+	form.draw()
+end
+
+function getPage()
+
+	return formular.page
+end
+
+function draw()
+	term.setBackgroundColor(formular.background)
+	term.clear()
+	if formular.page ~= 0 and formular.element[formular.page] then
+		for k, v in pairs(formular.element[formular.page]) do
+			v:draw()
+		end
+	end
+	if formular.element[0] ~= nil then
+		for k, v in pairs(formular.element[0]) do
+			v:draw()
+		end
+	end
+end
+
+function run()
+	while true do
+
+		local e = {os.pullEvent()}
+		local eventType = e[1];
+		local x = e[3]
+		local y = e[4]
+
+		if eventType == "mouse_click" then
+			--Má se kontrolovat kliknutí i na zbytku plátna
+			local c = true
+			--Projede všechny prvky, které jsou vidět na všech stránkách
+			for k, v in pairs(formular.element[0]) do
+				c = v:checkXY(x,y)
+			end
+			--Projede všechny prvky dané stránky, pokud nějaké jsou
+			if formular.element[formular.page] and c then
+				for k, v in pairs(formular.element[formular.page]) do
+					v:checkXY(x,y)
+				end
+			end
+		elseif eventType == "mouse_scroll" then
+
+			if formular.element[formular.page] then
+				local scrollDirection = e[2]
+				for k, v in pairs(formular.element[formular.page]) do
+					if v.mouseScroll ~= nil then
+						if v:mouseScroll(x, y, scrollDirection) then break end
+					end
+				end
+			end
+		end
+	end
+end
+
+function new(t)
+	setmetatable(t, prototype)
+	t.width, t.height = term.getSize()
+	formular = t
+end
+
+function sayHello()
+	print("Hello")
+end

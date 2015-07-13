@@ -1,0 +1,63 @@
+function new (o)
+
+	assert(o.layoutX, "You need to define X coordinate")
+	assert(o.layoutY, "You need to define Y coordinate")
+
+	t = Node.new(o)
+
+	t.width = t.width or 7
+	t.height = t.height or 1
+	if t.autosize == nil then t.autosize = true	end
+
+	t.getMinX = getMinX
+	t.getMinY = getMinY
+	t.getMaxX = getMaxX
+	t.getMaxY = getMaxY
+	t.contains = contains
+	t.union = union
+	t.draw = draw
+
+	return t
+end
+
+function getMinX (self)
+	return self.layoutX
+end
+
+function getMinY (self)
+	return self.layoutY
+end
+
+function getMaxX (self)
+	return self.layoutX + self.width - 1
+end
+
+function getMaxY (self)
+	return self.layoutY + self.height - 1
+end
+
+function contains (self, x, y)
+	--Util.dump(tostring(self) .. " X: " .. x .. ", Y: " .. y)
+	return x >= self.layoutX and x <= self:getMaxX() and y >= self.layoutY and y <= self:getMaxY()
+end
+
+function union (self, region)
+	local x1 = math.min(self:getMinX(), region:getMinX())
+	local y1 = math.min(self:getMinY(), region:getMinY())
+	local x2 = math.max(self:getMaxX(), region:getMaxX())
+	local y2 = math.max(self:getMaxY(), region:getMaxY())
+
+	return Region.new({
+		x = x1, y = y1, width = math.abs(x2 - x1), height = math.abs(y2 - y1)
+	})
+end
+
+function draw (self)
+	paintutils.drawFilledBox(
+		self:getMinX(),
+		self:getMinY(),
+		self:getMaxX(),
+		self:getMaxY(),
+		self.background
+	)
+end

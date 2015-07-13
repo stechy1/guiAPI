@@ -1,0 +1,31 @@
+function new (o)
+	t = BaseObject.new(o)
+
+	if t.disabled == nil then t.disabled = false end
+	if t.visible == nil then t.visible = true end
+
+	t.pageIndex = t.pageIndex or 1
+	t.layoutX = t.layoutX or 0
+	t.layoutY = t.layoutY or 0
+	t.translateX = t.translateX or 0
+	t.translateY = t.translateY or 0
+	t.theme = t.theme or Theme.STANDART
+
+	t.draw = t.draw or function() return false end
+
+	t.onKeyPress = t.onKeyPress or function() return false end
+	t.keyPressInternal = function() return false end
+	t.onKeyUp = t.onKeyUp or function() return false end
+	t.keyUpInternal = function() return false end
+
+	t.onMouseClick = t.onMouseClick or function() return false end
+	t.mouseClickInternal = function(self, x, y) self:onMouseClick(x, y) end
+	t.onMouseUp = t.onMouseUp or function() return false end
+	t.mouseUpInternal = function(self, x, y) self:onMouseUp(x, y) end
+	t.onMouseScroll = t.onMouseScroll or function() return false end
+	t.mouseScrollInternal = function(self, x, y, orientation) self:onMouseScroll(x, y, orientation) end
+	t.onMouseDrag = t.onMouseDrag or function() return false end
+	t.mouseDragInternal = function(self, x, y) self:onMouseDrag(x, y) end
+
+	return t
+end

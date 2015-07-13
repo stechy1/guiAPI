@@ -1,0 +1,70 @@
+function printString(table)
+	local toPrint = ""
+	if type(table) == "table" then
+		for k, v in pairs(table) do
+			toPrint = toPrint.."Key: "..k.." Value = "..tostring(v)..", "
+		end
+	else
+		toPrint = table
+	end
+	print(toPrint)
+end
+
+function printTable(table, recursive, padding)
+	if padding == nil then padding = 0 end
+	if table == nil then print("Table doesnt exist") return false end
+	if type(table) ~= "table" then print("This is not a table") return false end
+	for k, v in pairs(table) do
+		if recursive and type(v) == "table" then
+			print(string.rep(" ", padding) .. "Key: ".. k .. ", value: " .. tostring(v))
+			printTable(v, true, padding + 1)
+		else
+			print(string.rep(" ", padding) .. "Key: "..k..", value: "..tostring(v))
+		end
+	end
+end
+
+local function writer(var, recursive, padding, file)
+	if type(var) == "table" then
+		for k, v in pairs(var) do
+			if type(v) == "table" and recursive then
+				file.write(string.rep(" ", padding) .. "Table \n")
+				writer(v, recursive, padding + 4, file)
+			elseif type(v) ~= "function" then
+				file.write(string.rep(" ", padding) .. "Key: " .. k .. ", Value: " .. tostring(v) .. "\n")
+			end
+		end
+	elseif type(v) ~= "function" then
+		file.write(string.rep(" ", padding) .. tostring(var) .. "\n")
+	end
+end
+
+function dump(var, recursive, path)
+	if recursive == nil then recursive = false end
+	path = path or "dump.txt"
+	local file = fs.open(path, "a")
+	writer(var, recursive, 0, file)
+	file.close()
+end
+
+function randomString(length)
+   length = length or 1
+    if length < 1 then return nil end
+	local array = {}
+    for i = 1, length do
+        array[i] = string.char(math.random(32, 126))
+    end
+    return table.concat(array)
+end
+
+function center (x, width, textLength)
+	return math.ceil(x + width / 2 - textLength / 2)
+end
+
+function shorterString(text, length)
+	--if #text <= length return text end
+
+	--return text:sub(1, length)
+
+	return #text <= length and text or text:sub(1, length)
+end

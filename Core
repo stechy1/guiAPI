@@ -1,0 +1,44 @@
+local path = "/guiAPI/"
+
+local utility = {"Util", "JSON", "Style", "Theme"}
+local prototypes = {"BaseObject", "Node", "Region", "Labeled"}
+local components = {"Label", "Button", "TextBox", "ProgressBar", "GroupBox", "ListBox"--[[, "ComboBox", "Menu", "Dialog"]]}
+local metaComponents = {"GroupItem"}
+local apis = {"Form", "Methods", "Designer"}
+local mistake = 0
+local debug = false
+
+--VIEW_PATH = path .. "view"
+
+local function loadAPI(table, filePath)
+	for _, item in pairs(table) do
+		if debug then
+			print("Loading: " .. filePath .. "/" .. item)
+			os.sleep(0.2)
+		end
+		if not os.loadAPI(filePath ..  "/" .. item) then
+			mistake = mistake + 1
+		end
+	end
+end
+
+function init()
+
+	loadAPI(utility, path .. "utility")
+	loadAPI(prototypes, path .. "prototype")
+	loadAPI(components, path .. "component")
+	loadAPI(metaComponents, path .. "component/meta")
+	loadAPI(apis, path)
+	--os.loadAPI(path .. "Form")
+	--loadView()
+
+	if mistake == 0 then
+		print("Success")
+		Form.draw()
+		Form.run()
+	else
+		print("Somewhere is a problem")
+		print(mistake)
+	end
+end
+

@@ -1,0 +1,43 @@
+local labels = 1
+
+new = function(t)
+	assert(t.name, "You need to define name of the control")
+	assert(t.x, "You need to define X coordinate")
+	assert(t.y, "You need to define Y coordinate")
+	setmetatable(t, core.prototype)		
+	t.draw = draw
+	t.checkXY = checkXY
+	if t.text == nil then
+		t.text = "Label"..labels
+		labels = labels + 1
+	end
+	return t
+end
+
+draw = function(self)
+	local t = self
+	term.setCursorPos(t.x, t.y)
+	term.setBackgroundColor(t.txtBgColor)
+	term.setTextColor(t.txtColor)
+	if t.autosize then
+		if #t.text > t.width then --text vetsi nez sirka
+			t.width = #t.text
+		end
+		term.write(t.text)
+	else
+		if #t.text > t.width then
+			term.write(string.sub(t.text, 1, -t.width))
+		else
+			term.write(t.text)
+		end
+	end
+end
+
+checkXY = function(self, x, y)
+	local t = self
+	if x >= t.x and x <= t.x + t.width and y == t.y then
+		if onClick ~= nil then
+			onClick()
+		end
+	end
+end	

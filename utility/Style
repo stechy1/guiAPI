@@ -1,0 +1,53 @@
+DEFAULT = 1
+SUCCESS = 2
+INFO = 3
+WARNING = 4
+DANGER = 5
+
+color = {
+	{
+		orig = colors.white,
+		inverted = colors.black
+	},
+	{
+		orig = colors.green,
+		inverted = colors.red
+	},
+	{
+		orig = colors.yellow,
+		inverted = colors.magenta
+	},
+	{
+		orig = colors.orange,
+		inverted = colors.cyan
+	},
+	{
+		orig = colors.red,
+		inverted = colors.green
+	},
+	transparent = 6
+}
+
+text = {
+	color = colors.white,
+	background = colors.blue
+}
+
+background = {
+	color = colors.blue
+}
+
+theme = {
+	{
+		label = {
+			textColor = colors.white,
+			textBackground = colors.lightGray,
+			background = colors.lightGray
+		},
+		button = {
+			textColor = colors.white,
+			textBackground = colours.grey,
+			background = colours.grey
+		}
+	}
+}

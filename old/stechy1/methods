@@ -1,0 +1,19 @@
+function restart()
+	os.reboot()
+end
+
+function add()
+	--core.printTable(form)
+	local progressbar = form.components.get("progressbar", 1)
+	local progress = progressbar.progress
+	progressbar:setProgress(progress + 10)
+	--core.printString(progressbar.progress)
+	--core.printTable(progressbar)
+	--os.sleep(1)
+end
+
+function minus()
+local progressbar = form.components.get("progressbar", 1)
+	local progress = progressbar.progress
+	progressbar:setProgress(progress - 10)
+end

@@ -1,0 +1,70 @@
+local buttons = 1
+
+new = function(t)
+	assert(t.name, "You need to define name of the control")
+	assert(t.x, "You need to define X coordinate")
+	assert(t.y, "You need to define Y coordinate")
+	setmetatable(t, core.prototype)
+	t.draw = draw
+	t.checkXY = checkXY
+	if t.caption == nil then
+		t.caption = "Button"..buttons
+		buttons = buttons + 1
+	end
+
+	if t.autosize then t.width = #t.caption end
+
+	return t
+end
+
+draw = function(self)
+	local t = self
+
+	term.setBackgroundColor(t.txtBgColor)
+	term.setTextColor(t.txtColor)
+	if t.autosize then
+		term.setCursorPos(t.x, t.y)
+		term.write(t.caption)
+	else
+		paintutils.drawLine(t.x, t.y, t.x + t.width, t.y)
+		if #t.caption + 2 * t.padding > t.width then
+			term.setCursorPos(t.x, t.y)
+			term.write(string.sub(t.caption, 1, t.width + 1))
+		else
+			term.setCursorPos(t.x + t.padding + t.width / 2 - #t.caption / 2, t.y + math.ceil(t.height / 2) - 1)
+			term.write(t.caption)
+		end
+	end
+
+	--[[local xEndPosForDrawLine = t.x + t.width + 2 * t.padding - 1
+	if string.len(t.caption) + 2 * t.padding > t.width and t.autosize  then --text je vetsi nez sirka
+		xEndPosForDrawLine = t.x + string.len(t.caption) - 1 + 2 * t.padding
+		t.width = string.len(t.caption) + 2 * t.padding
+	end
+	for y = t.y,t.y + t.height - 1 do
+		paintutils.drawLine(t.x, y, xEndPosForDrawLine, y, t.mainBgColor)
+	end
+	term.setBackgroundColor(t.txtBgColor)
+	term.setTextColor(t.txtColor)
+	term.setCursorPos(t.x + t.padding, t.y + math.ceil(t.height / 2) - 1)
+	if t.autosize then
+		term.write(t.caption)
+	else
+		term.write(string.sub(t.caption, 1, t.width))
+	end]]
+end
+
+checkXY = function(self, x,y)
+	local t = self
+	--core.printTable(t)
+	--print("X: " .. x .. ", Y: " .. y)
+	--shell.exit()
+	if x >= t.x and x <= t.x + t.width and y >= t.y and y <= t.y + t.height - 1 then
+		if t.onClick ~= nil then
+			t.onClick()
+			return false
+		end
+	end
+
+	return true
+end

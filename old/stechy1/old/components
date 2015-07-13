@@ -1,0 +1,568 @@
+local componentsCount = {
+	labels = 1;
+	buttons = 1;
+	groupBoxes = 1;
+	textBoxes = 1;
+	comboBoxes = 1;
+	listBoxes = 1;
+	progressBars = 1;
+}
+
+local prototype = {
+	__index = {
+		x = 1;							--X coordinate
+		y = 1;							--Y coordinate
+		caption = nil;					--Label for component
+		width = 7;						--Width
+		height = 1;						--Height
+		padding = 1;					--Padding for text in component (for button and caption)
+		margin = 2;						--Margin for component (only for groupBox)
+		txtColor = colors.white;		--Text color
+		txtBgColor = colors.blue;		--Text bacground color
+		mainBgColor = colors.blue;		--Main bacground color
+		btnClrOn = colors.green;		--Color for ON button
+		btnClrOff = colors.red;			--Color for OFF button
+		pageIndex = 1;					--Page index - for multiform
+		showCaption = false;			--If true, then caption will be rendered
+		autosize = true;				--If true, control will auto set width
+		onClick = nil;					--Function onClick
+		onChange = nil;					--Function onChange (for textBox and ListBox or Combobox or Groupbox)
+		keyDown = nil;
+		draw = function()				--Base drawing function
+			print("Drawing error!")
+		end;
+		checkXY = function(x,y)			--Base checking function (onMouseClick)
+			print("Checking failed")
+		end;
+
+	}
+}
+
+label = {
+	new = function(t)
+		assert(t.name, "You need to define name of control")
+		assert(t.x, "You need to define X coordinate")
+		assert(t.y, "You need to define Y coordinate")
+		setmetatable(t, prototype)		
+		t.draw = label.draw
+		t.checkXY = label.checkXY
+		if t.text == nil then
+			t.text = "Label"..componentsCount.labels
+			componentsCount.labels = componentsCount.labels + 1
+		end
+		return t
+	end,
+	draw = function(self)
+		local t = self
+		term.setCursorPos(t.x, t.y)
+		term.setBackgroundColor(t.txtBgColor)
+		term.setTextColor(t.txtColor)
+		if t.autosize then
+			if #t.text > t.width then --text vetsi nez sirka
+				t.width = #t.text
+			end
+			term.write(t.text)
+		else
+			if #t.text > t.width then
+				term.write(string.sub(t.text, 1, -t.width))
+			else
+				term.write(t.text)
+			end
+		end
+	end,
+	checkXY = function(self, x, y)
+		local t = self
+		if x >= t.x and x <= t.x + t.width and y == t.y then
+			if onClick ~= nil then
+				onClick()
+			end
+		end
+	end	
+}
+
+button = {
+	new = function(t)
+		assert(t.name, "You need to define name of control")
+		assert(t.x, "You need to define X coordinate")
+		assert(t.y, "You need to define Y coordinate")
+		setmetatable(t, prototype)
+		t.draw = button.draw
+		t.checkXY = button.checkXY
+		if t.caption == nil then
+			t.caption = "Button"..componentsCount.buttons
+			componentsCount.buttons = componentsCount.buttons + 1
+		end
+		return t
+	end,
+	draw = function(self)
+		local t = self
+		local xEndPosForDrawLine = t.x + t.width + 2*t.padding - 1
+		if string.len(t.caption) + 2*t.padding > t.width and t.autosize  then --text je vetsi nez sirka
+			xEndPosForDrawLine = t.x + string.len(t.caption) - 1 + 2*t.padding
+			t.width = string.len(t.caption) + 2*t.padding
+		end
+		for y=t.y,t.y + t.height - 1 do
+			paintutils.drawLine(t.x, y, xEndPosForDrawLine, y, t.mainBgColor)
+		end
+		term.setBackgroundColor(t.txtBgColor)
+		term.setTextColor(t.txtColor)
+		term.setCursorPos(t.x + t.padding, t.y + math.ceil(t.height / 2) - 1)
+		if t.autosize then
+			term.write(t.caption)
+		else
+			term.write(string.sub(t.caption, 1, t.width))
+		end
+	end,
+	checkXY = function(self, x,y)
+		local t = self
+		if x >= t.x and x <= t.x + t.width - 1 and y >= t.y and y <= t.y + t.height - 1 then
+			if t.onClick ~= nil then
+				t.onClick()
+			end
+		end
+	end		
+}
+
+groupBox = {
+	new = function (t)
+		assert(t.name, "You need to define name of control")
+		assert(t.x, "You need to define X coordinate")
+		assert(t.y, "You need to define Y coordinate")
+		assert(t.items, "You need to define items")
+		assert(t.typ, "You need to define type of groupBox (1 = radiobutton / 2 = checkbox / 3 = button")
+		setmetatable(t, prototype)
+		t.draw = groupBox.draw
+		t.checkXY = groupBox.checkXY
+		if t.caption == nil then
+			t.caption = "CheckBoxGroup"..componentsCount.groupBoxes
+			componentsCount.groupBoxes = componentsCount.groupBoxes + 1
+		end
+		t.width = 2;
+		t.height = 2;
+		t.groupBox = "GroupBox"..componentsCount.groupBoxes;
+		t.autosize = false;
+		t.selected = -1;
+		return t
+	end,
+	draw = function(self)
+		local t = self
+		for i, item in ipairs(t.items) do
+			if item[2] then
+				paintutils.drawLine(t.x, t.y + (i-1) * t.margin, t.x + 1, t.y + (i-1) * t.margin, t.btnClrOn)
+			else
+				paintutils.drawLine(t.x, t.y + (i-1) * t.margin, t.x + 1, t.y + (i-1) * t.margin, t.btnClrOff)
+			end
+			term.setBackgroundColor(t.txtBgColor)
+			term.setTextColor(t.txtColor)
+			term.setCursorPos(t.x + t.margin + 1, t.y + (i-1) * t.margin)
+			print(item[1])
+		end
+	end,
+	checkXY = function(self, x,y)
+		local t = self
+		for i, item in pairs(t.items) do
+			if x >= t.x and x <= t.x + 1 and y == t.y + (i-1) * t.margin then
+				t.selected = i
+				if t.typ == 1 then
+					for i, switchItem in ipairs(t.items) do
+						switchItem[2] = false
+					end
+					item[2] = true
+				elseif t.typ == 2 then--item
+					item[2] = not item[2]
+				elseif t.typ == 3 then--button
+					if item[3] ~= nil then
+						item[3]()
+					end
+				else
+					return false
+				end
+				if t.onChange ~= nil then
+					t.onChange()
+				end
+				gui.form.drawComponents()
+			end
+		end
+	end
+}
+
+textBox = {
+	new = function(t)
+		assert(t.name, "You need to define name of control")
+		assert(t.x, "You need to define X coordinate")
+		assert(t.y, "You need to define Y coordinate")
+		setmetatable(t, prototype)
+		t.draw = textBox.draw
+		t.checkXY = textBox.checkXY
+		t.keyDown = textBox.keyDown
+		t.autosize = false
+		if t.caption == nil then
+			t.caption = "TextBox"..componentsCount.textBoxes
+			componentsCount.textBoxes = componentsCount.textBoxes + 1
+		end
+		if t.secret == nil then t.secret = false end
+		t.enabled = false;
+		t.autosize = false;
+		return t
+	end,
+	draw = function(self)
+		local t = self
+		paintutils.drawLine(t.x, t.y, t.x + string.len(t.caption) + t.padding, t.y + t.height - 1, t.mainBgColor)
+		--local xPos = #t.text > t.width and t.x + t.width - 1 or t.x + #t.text
+		if t.showCaption and t.caption ~= nil then
+			term.setTextColor(t.txtColor)
+			term.setBackgroundColor(t.txtBgColor)
+			term.setCursorPos(t.x, t.y - 1)
+			term.write(t.caption)
+		end
+		term.setCursorPos(t.x, t.y)
+		term.setTextColor(t.txtColor)
+		term.setBackgroundColor(t.txtBgColor)
+		if #t.text > t.width then
+			term.write(t.secret and string.rep("*", t.width) or string.sub(t.text, -t.width))
+		else
+			term.write(t.secret and string.rep("*", #t.text) or t.text)
+		end
+	end,
+	checkXY = function(self, x,y)
+		local t = self
+		if x >= t.x and x <= t.x + t.width - 1 and y == t.y then
+			t.enabled = true
+			xPos = #t.text - 1 > t.width and t.x + t.width - 1 or t.x + #t.text
+			term.setCursorPos(xPos, t.y)
+			term.setCursorBlink(true)
+			while t.enabled do
+				e = {os.pullEvent()}
+				if e[1] == "mouse_click" then
+					term.setCursorBlink(false)
+					t.enabled = false
+				elseif e[1] == "char" then
+					t.text = t.text..e[2]
+					if t.onChange ~= nil then
+						t.onChange()
+					end
+				elseif e[1] == "key" then
+					if e[2] == 28 then --enter
+						term.setCursorBlink(false)
+						t.enabled = false
+					elseif e[2] == 14 then --backspace
+						t.text = t.text:sub(1,string.len(t.text)-1)
+						if t.onChange ~= nil then
+							t.onChange()
+						end
+					end
+				end
+				t.draw()
+				xPos = #t.text - 1 > t.width and t.x + t.width - 1 or t.x + #t.text
+				term.setCursorPos(xPos,t.y)
+			end
+		else --kliknu mimo
+			t.enabled = false
+		end
+	end,
+	keyDown = function(self)
+		return false
+	end
+}
+
+comboBox = {
+	new = function(t)
+		assert(t.name, "You need to define name of control")
+		assert(t.x, "You need to define X coordinate")
+		assert(t.y, "You need to define Y coordinate")
+		assert(t.items, "You need to define items of combobox")
+		setmetatable(t, prototype)
+		t.draw = comboBox.draw
+		t.checkXY = comboBox.checkXY
+		if t.caption == nil then
+			t.caption = "ComboBox"..componentsCount.comboBoxes
+			componentsCount.comboBoxes = componentsCount.comboBoxes + 1
+		end
+		t.enabled = false;
+		t.selected = -1;
+		t.index = 0;
+		return t
+	end,
+	draw = function(self)
+		local t = self
+		if #t.caption > t.width and t.autosize then --caption vetsi nez sirka
+			t.width = #t.caption
+		end
+		paintutils.drawLine(t.x,t.y,t.x + t.width, t.y, t.mainBgColor) --cara na caption
+		term.setCursorPos(t.x, t.y)
+		term.setTextColor(t.txtColor)
+		term.write(string.sub(t.caption, 1, t.width))
+		if t.enabled then --combobox je rozkliknuty
+			term.write(" /\\")
+			for i = 1,5 do
+				paintutils.drawLine(t.x, t.y + i, t.x + t.width, t.y + i, t.txtBgColor)
+			end
+			term.setTextColor(t.txtColor)
+			term.setBackgroundColor(t.txtBgColor)
+			--for i,text in ipairs(t.items) do
+			local k = 1
+			for i = t.index + 1, t.index + 5 do
+				if k == 6 then break end
+				local text = t.items[i]
+				term.setCursorPos(t.x, t.y + k)
+				if t.width > #text then--sirka vetsi nez text
+					term.write(" "..text)
+					term.write(string.rep(" ",t.width - #text))
+				else --sirka mensi nez text
+					term.write(string.sub(" "..text,1,t.width))
+				end
+				term.write(" ")
+				k = k + 1
+			end
+
+			paintutils.drawLine(t.x + t.width + 1, t.y + 1, t.x + t.width + 1, t.y + 5, t.mainBgColor)
+			paintutils.drawLine(t.x + t.width + 2 , t.y + 1, t.x + t.width + 2, t.y + 5, t.mainBgColor)
+			if #t.items > 5 then
+				term.setCursorPos(t.x + t.width + 2, t.y + 1)
+				term.write("^")
+				term.setCursorPos(t.x + t.width + 2, t.y + 5)
+				term.write("v")
+			end
+		else --combobox je zavreny
+			term.write(" \\/")
+		end
+	end,
+	checkXY = function(self, x, y)
+		local t = self
+		if t.enabled then --combobox je rozkliknuty
+			if x >= t.x and x <= t.x + t.width + 3 and y == t.y then --kliknu do labelu
+				t.selected = -1
+				t.enabled = false
+				gui.form.drawComponents()
+				return false
+			elseif x == t.x + t.width + 2 and y == t.y + 1 then --sipka nahoru
+				if t.index > 0 then
+					t.index = t.index - 1
+				end
+				t:draw()
+			elseif x == t.x + t.width + 2 and y == t.y + 5 then --sipka dolu
+				if t.index < #t.items - 5 then
+					t.index = t.index + 1
+				end
+				t:draw()
+			end
+			for i = 1, 5 do
+				if x >= t.x and x <= t.x + t.width and y == t.y + i then --vyberu item
+					t.selected = i + t.index
+					t.enabled = false
+					if t.onChange ~= nil then
+						t.onChange()
+					end
+					gui.form.drawComponents()
+					break
+				end
+			end
+		else
+			if x >= t.x and x <= t.x + t.width + 3 and y == t.y then --kliknu nahoru a je zavreny
+				t.enabled = true
+				t:draw()
+			end
+		end
+	end
+}
+
+listBox = {
+	new = function(t)
+		assert(t.name, "You need to define name of control")
+		assert(t.x, "You need to define X coordinate")
+		assert(t.y, "You need to define Y coordinate")
+		assert(t.items, "You need to define items of listbox")
+		setmetatable(t, prototype)
+		t.draw = listBox.draw
+		t.checkXY = listBox.checkXY
+		t.selected = -1;
+		t.index = 0;
+		return t
+	end,
+	draw = function(self)
+		local t = self
+		term.setTextColor(t.txtColor)
+		term.setBackgroundColor(t.txtBgColor)
+		term.setCursorPos(t.x, t.y)
+		
+		local k = 1
+		for i = t.index + 1, t.index + 5 do
+			if k == 6 then break end
+			local text = t.items[i]
+			term.setCursorPos(t.x, t.y + k - 1)
+			if t.width > #text then--sirka vetsi nez text
+				term.write(" "..text)
+				term.write(string.rep(" ",t.width - #text - 1))
+			else --sirka mensi nez text
+				term.write(string.sub(" "..text,1,t.width))
+			end
+			term.write(" ")
+			k = k + 1
+		end
+		paintutils.drawLine(t.x + t.width + 1, t.y, t.x + t.width + 1, t.y + 4, t.mainBgColor)
+		paintutils.drawLine(t.x + t.width + 2, t.y, t.x + t.width + 2, t.y + 4, t.mainBgColor)
+		if #t.items > 5 then
+			term.setCursorPos(t.x + t.width + 2, t.y)
+			term.write("^")
+			term.setCursorPos(t.x + t.width + 2, t.y + 4)
+			term.write("v")
+		end
+	end,
+	checkXY = function(self, x, y)
+		local t = self
+		for i = 1, 5 do
+			if x >= t.x and x <= t.x + t.width and y == t.y + i - 1 then --vyberu item
+				t.selected = i + t.index
+				if t.onChange ~= nil then
+					t.onChange()
+				end
+				break
+			end
+		end
+		if x == t.x + t.width + 2 and y == t.y then --sipka nahoru
+			if t.index > 0 then
+				t.index = t.index - 1
+			end
+			t:draw()
+		elseif x == t.x + t.width + 2 and y == t.y + 4 then --sipka dolu
+			if t.index < #t.items - 5 then
+				t.index = t.index + 1
+			end
+			t:draw()
+		end
+	end
+}
+
+progressBar = {
+	new = function(t)
+		assert(t.name, "You need to define name of control")
+		assert(t.x, "You need to define X coordinate")
+		assert(t.y, "You need to define Y coordinate")
+		assert(t.percent, "You need to define act. percent value")
+		setmetatable(t, prototype)
+		t.draw = progressBar.draw
+		t.checkXY = progressBar.checkXY
+		t.height = 3;
+		componentsCount.progressBars = componentsCount.progressBars + 1
+		return t
+	end,
+	draw = function(self)
+		local t = self
+		for i = 1, t.height do
+			paintutils.drawLine(t.x, t.y + i - 1, t.x + t.width, t.y + i - 1, colors.gray)
+		end
+		if t.percent > 0 then
+			if t.percent > 100 then t.percent = 100 end
+			local width = math.ceil((t.percent/100) * t.width)
+			for i = 1, t.height do
+				paintutils.drawLine(t.x, t.y + i - 1, t.x + width, t.y + i - 1, colors.green)
+			end
+		end
+		local x = math.ceil(t.x + t.width / 2) - 1
+		term.setCursorPos(x, t.y + 1)
+		term.setBackgroundColor(t.txtBgColor)
+		term.setTextColor(t.txtColor)
+		term.write(t.percent.."%")
+	end,
+	checkXY = function(self, x, y)
+		return false
+	end
+}
+
+menu = {
+	new = function(t)
+		assert(t.name, "You need to define name of control")
+		assert(t.items, "You need to define items of menu")
+		setmetatable(t, prototype)
+		t.draw = menu.draw
+		t.checkXY = menu.checkXY
+		t.pageIndex = 0;
+		--t.width = 10;
+		return t
+	end,
+	draw = function(self)
+
+		local function getTheLongest(table)
+			local length = 0
+			for k, v in pairs(table) do
+				local itemLength = string.len(tostring(v[1]))
+				if itemLength > length then length = itemLength end
+			end
+			return length
+		end
+
+		local function printItems(subMenu, x, y)
+			local subMenuIndex = 0
+			local subMenuItems = nil
+			local X = x
+			local Y = y
+			local item = ""
+			local i = 0
+			for k, v in pairs(subMenu) do
+				term.setCursorPos(X, Y)
+				term.write(" "..string.sub(v[1], 1, t.width))
+				term.write(string.rep(" ", t.width - string.len(v[1])))
+				term.write(v[2] and ">" or " ")
+				Y = Y + 1
+				if v[2] then
+					subMenuIndex = i
+					subMenuItems = v[3]
+					item = v[1]
+				end
+				i = i + 1
+			end
+			if subMenuItems == nil then return else
+				printItems(subMenuItems, x + getTheLongest(subMenu) + 2, y + subMenuIndex)
+			end
+		end
+
+		local t = self
+		term.setCursorPos(1, 1)
+		term.clearLine()
+		local subMenuIndex = 0
+		local subMenuItems = {}
+		
+		for i, v in ipairs(t.items) do
+			term.write(" "..tostring(v[1]))
+			if v[2] then
+				subMenuIndex = i
+				subMenuItems = v[3]
+			end
+		end
+		local x = 1
+		if subMenuIndex > 1 then
+			for i = 1, subMenuIndex - 1 do
+				x = x + string.len(t.items[i][1])
+			end
+		end
+		printItems(subMenuItems, x + subMenuIndex, 2)
+	end,
+	checkXY = function(self, x, y)
+		local function checkSubMenus(subMenu, x, y, xPos, yPos)
+			print("subMenu: "..tostring(subMenu)..", X: "..x..", Y: "..y..", Xpos: "..xPos..", yPos: "..yPos)
+		end
+
+		local t = self
+		local xPos = 2
+		local pomXPos = 0
+		local subMenuIndex = 0
+		local subMenuItems = nil
+		for i, v in ipairs(t.items) do
+			if x >= xPos and x < xPos + string.len(v[1]) and y == 1 then
+				v[2] = not v[2]
+				gui.form.drawComponents()
+				subMenuIndex = i
+				subMenuItems = v[3]
+				pomXPos = pomXPos + string.len(v[1])
+				return
+			else
+				v[2] = false
+			end				
+			xPos = xPos + string.len(v[1]) + 1
+		end
+		if subMenuItems ~= nil then
+			checkSubMenus(subMenuItems, x, y, pomXPos + subMenuIndex, 2)
+		end
+		--gui.form.drawComponents()
+	end
+}

@@ -1,0 +1,125 @@
+local label = Label.new({
+	layoutX = 5,
+	layoutY = 5,
+	autosize = false,
+	text = "Short text",
+	width = 5,
+	pageIndex = 1,
+	id = "shortLabel"
+})
+
+local label1 = Label.new({
+	layoutX = 5,
+	layoutY = 7,
+	width = 5,
+	pageIndex = 1,
+	id = "labelWithoutText"
+})
+
+local restartButton = Button.new({
+	layoutX = Form.getWidth() - 6,
+	layoutY = Form.getHeight(),
+	text = "Restart",
+	pageIndex = 1,
+	id = "restartButton",
+	onMouseClick = function() 
+		os.reboot()
+	end
+})
+
+local vstup = TextBox.new({
+	layoutX = 20,
+	layoutY = 5,
+	id = "textInput"
+})
+
+local progressbar = ProgressBar.new({
+	layoutX = 20,
+	layoutY = 7,
+	progress = 0,
+	width = 8,
+	id = "progressbar"
+})
+
+local addProgress = Button.new({
+	layoutX = 2,
+	layoutY = 2,
+	text = "ADD",
+	id = "addProgress",
+	onMouseClick = function()
+		progressbar:setProgress(progressbar.progress + 10)
+	end
+})
+
+local remProgress = Button.new({
+	layoutX = 2,
+	layoutY = 3,
+	text = "REM",
+	id = "remProgress",
+	onMouseClick = function()
+		progressbar:setProgress(progressbar.progress - 10)
+	end
+})
+
+local radioGroup = GroupBox.new({
+	layoutX = 3,
+	layoutY = 10,
+	items = {
+		{"RadioItem1"},
+		{"RadioItem2"},
+		{"RadioItem3"},
+		{"RadioItem4"},
+		{"RadioItem5"}
+	},
+	groupType = GroupBox.RADIOBUTTON,
+	id = "radiogroup"
+})
+
+-- local cmb = ComboBox.new({
+-- 	layoutX = 17,
+-- 	layoutY = 9,
+-- 	width = 17,
+-- 	items = {
+-- 		"ComboItem1",
+-- 		"ComboItem2",
+-- 		"ComboItem3",
+-- 		"ComboItem4",
+-- 		"ComboItem5",
+-- 		"ComboItem6",
+-- 		"ComboItem7",
+-- 		"ComboItem8",
+-- 		"ComboItem9",
+-- 		"ComboItem10"
+-- 	},
+-- 	id = "combobox"
+-- })
+
+local lb = ListBox.new({
+	layoutX = 17,
+	layoutY = 9,
+	width = 13,
+	items = {
+		"ListItem1",
+		"ListItem2",
+		"ListItem3",
+		"ListItem4",
+		"ListItem5",
+		"ListItem6",
+		"ListItem7",
+		"ListItem8",
+		"ListItem9",
+		"ListItem10"
+	},
+	id = "listbox"
+})
+
+Form.components.add(label)
+Form.components.add(label1)
+Form.components.add(restartButton)
+Form.components.add(vstup)
+Form.components.add(lb)
+Form.components.add(progressbar)
+Form.components.add(addProgress)
+Form.components.add(remProgress)
+Form.components.add(radioGroup)
+--Form.components.add(cmb)

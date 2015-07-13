@@ -1,0 +1,54 @@
+local progressBars = 1
+
+new = function(t)
+	assert(t.name, "You need to define name of the control")
+	assert(t.x, "You need to define X coordinate")
+	assert(t.y, "You need to define Y coordinate")
+	assert(t.progress, "You need to define progress value")
+	setmetatable(t, core.prototype)
+	t.draw = draw
+	t.checkXY = checkXY
+	t.setProgress = setProgress
+	t.height = 1
+	t.width = 8
+	t.showText = true
+	progressBars = progressBars + 1
+	return t
+end
+
+draw = function(self)
+	local t = self
+	--for i = 1, t.height do
+		paintutils.drawLine(t.x, t.y--[[ + i - 1]], t.x + t.width, t.y--[[ + i - 1]], colors.gray)
+	--end
+	if t.progress > 0 then
+		if t.progress > 100 then t.progress = 100 end
+		local width = math.ceil((t.progress / 100) * t.width)
+		--for i = 1, t.height do
+			paintutils.drawLine(t.x, t.y--[[ + i - 1]], t.x + width, t.y--[[ + i - 1]], colors.green)
+		--end
+	else
+		t.progress = 0
+	end
+	if t.showText then
+		local x = math.ceil(t.x + t.width / 2) - 1
+		term.setCursorPos(x, t.y--[[ + 1]])
+		term.setBackgroundColor(t.txtBgColor)
+		term.setTextColor(t.txtColor)
+		term.write(t.progress.."%")
+	end
+end
+
+checkXY = function(self, x, y)
+	return false
+end
+
+setProgress = function(self, newProgress)
+	local t = self
+
+	if newProgress < 0 then newProgress = 0 end
+	if newProgress > 100 then newProgress = 100 end
+	
+	t.progress = newProgress
+	t:draw()
+end

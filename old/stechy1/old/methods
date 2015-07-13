@@ -1,0 +1,73 @@
+function restart()
+	os.reboot()
+end
+
+function strankaDva()
+
+	gui.form.setPage(2)
+end
+
+function strankaTri()
+
+	gui.form.setPage(3)
+end
+
+function back()
+	local page = gui.form.getPage()
+	if page > 1 then
+		gui.form.setPage(page - 1)
+	end
+end
+
+function home()
+
+	gui.form.setPage(1)
+end
+
+function getLiquidName()
+	local tekutiny = peripheral.getNames()
+	local names = {}
+	local index = 1
+	for i, v in ipairs(tekutiny) do
+		if string.find(v,"drum") then
+			local drum = peripheral.wrap(v)
+			local info = drum.getTankInfo("unknown")
+			names[index] = {info[1]["rawName"], false, methods.showLiquids}
+			print("Found "..names[index][1].." on port "..v)
+			index = index + 1
+		end
+	end
+	os.sleep(1)
+	return names
+end
+
+function showLiquids()
+	local tekutiny = gui.form.getElement("liquids")
+	local index = tekutiny.selected
+	local drum = peripheral.wrap("drum_"..index - 1)
+	local info = drum.getTankInfo("unknown")
+	gui.form.setLabelText("liquidName", "Nazev: "..info[1]["rawName"])
+	gui.form.setLabelText("liquidAmount", "Aktualni stav: "..info[1]["amount"].."mB")
+	gui.form.setLabelText("liquidCapacity", "Kapacita: "..info[1]["capacity"].."mB")
+	gui.form.setPage(4)
+end
+
+function mount()
+	local tekutiny = gui.form.getElement("liquids")
+	local index = tekutiny.selected
+	local connector = peripheral.wrap("bundledConnector_0")
+	connector.setBundledOutput(math.pow(2,index - 1))
+	os.sleep(5)
+	connector.setBundledOutput(0)
+end
+
+function unmount()
+
+end
+
+function delej()
+	for i = 0, 120 do
+		gui.form.setProgress("pBar", i)
+		os.sleep(0.1)
+	end
+end

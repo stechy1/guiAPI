@@ -1,0 +1,26 @@
+os.loadAPI("/guiAPI/Core")
+
+Core.init()
+
+--[[os.loadAPI("/guiAPI/Util")
+os.loadAPI("/guiAPI/prototype/BaseObject")
+os.loadAPI("/guiAPI/prototype/Node")
+os.loadAPI("/guiAPI/prototype/Region")
+os.loadAPI("/guiAPI/components/Label")
+os.loadAPI("/guiAPI/Form")
+
+Form.new()
+
+local label = Label.new({
+	layoutX = 5,
+	layoutY = 5,
+	autosize = false,
+	text = "Mega dlouhy text",
+	width = 5
+})
+--term.clear()
+--label:draw()
+
+Form.components.add(label)
+
+Form.draw()]]

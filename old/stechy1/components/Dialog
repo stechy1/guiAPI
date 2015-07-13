@@ -1,0 +1,72 @@
+SUCCESS = 1
+WARNING = 2
+INFO = 3
+DANGER = 4
+
+local palete = {colors.green, colors.orange, colors.yellow, colors.red}
+local captions = {"Success", "Warning", "Info", "Danger"}
+
+new = function(t)
+	assert(t.name, "You need to define name of the control")
+	assert(t.text, "You need to define text as content of the dialog")
+	assert(t.dialogType, "You need to define type of the dialog")
+
+	setmetatable(t, core.prototype)
+	t.draw = draw
+	t.checkXY = checkXY
+	t.width = 20
+	t.height = 6
+	t.pageIndex = 0
+	t.mainBgColor = colours.grey
+
+	t.x = math.ceil(form.width / 2 - t.width / 2)
+	t.y = math.ceil(form.height / 2 - t.height / 2)
+
+	t.btn = Button.new({
+		x = t.x + 1, 
+		y = t.y + t.height - 1, 
+		name = "tmp", 
+		caption = "ok", 
+		onClick = function()
+			t.visible = false
+			--form.components.delete(t.name, 0) 
+			form.draw() 
+		end
+	})
+
+	if t.caption == nil then t.caption = captions[t.dialogType] end
+
+	return t
+end
+
+draw = function(self)
+	local t = self
+
+	if t.visible then
+		term.setTextColor(t.txtColor)
+		term.setBackgroundColor(palete[t.dialogType])
+
+		paintutils.drawLine(t.x, t.y, t.x + t.width, t.y, palete[t.dialogType])
+		term.setCursorPos(t.x, t.y)
+		term.write(t.caption)
+		paintutils.drawFilledBox(t.x, t.y + 1, t.x + t.width, t.y + t.height, t.mainBgColor)
+
+		--term.setBackgroundColor(t.txtBgColor)
+		term.setCursorPos(t.x + 1, t.y + 2)
+		term.write(t.text)
+
+		t.btn:draw()
+	end
+end
+
+checkXY = function(self, x, y)
+	local t = self
+	term.setCursorPos(1, 1)
+	if t.visible then
+		if t.btn:checkXY(x, y) then return false end
+
+		if x >= t.x and x <= t.x + t.width and y >= t.y and y <= t.y + t.height then return false end
+	end
+
+	return true
+end
